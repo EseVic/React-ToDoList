@@ -1,16 +1,18 @@
 pipeline {
     agent any
 
+    environment {IMAGE = "dockerhub254/react-todo-list"}
+
     tools {
-        nodejs "NodeJs"
+        nodejs "NodeJS"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                git branch: 'peter-branch',
-                    url: 'https://github.com/bigcephas1/React-ToDoList.git'
+                git branch: 'sarah-feature',
+                    url: 'https://github.com/sarah254-tech/React-ToDoList'
             }
         }
 
@@ -41,6 +43,32 @@ pipeline {
             }
         }
 
+        stage('Build Docker image') {
+            when { expression { fileExists('Dockerfile') } }
+            steps {
+                sh 'docker build -t $IMAGE:latest .'
+      }
+    }
+
+        stage('Run Tests in Container') {
+            when { expression { fileExists('Dockerfile') } }
+            steps {
+                sh 'docker run --rm $IMAGE:latest /bin/sh -c "echo container test OK"'
+      }
+    }
+
+        stage('Build and Push to Docker Hub') {
+            when { expression { fileExists('Dockerfile') } }
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                    def app = docker.build("${IMAGE}:latest")
+                    app.push()
+          }
+        }
+      }
+    }
+
     }
 
     post {
@@ -51,14 +79,14 @@ pipeline {
             emailext(
                 subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: "The build ${env.BUILD_URL} completed successfully.",
-                to: "ukpabipeteru@gmail.com"
+                to: "sarahamadi97@gmail.com"
             )
         }
         failure {
             emailext(
                 subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: "The build ${env.BUILD_URL} failed. Please check the logs.",
-                to: "ukpabipeteru@gmail.com"
+                to: "sarahamadi97@gmail.com"
             )
         }
     }

@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_REPO = "wtabitha/react-todo"   // change this
+        DOCKERHUB_REPO = "react-todo"   // change this
     }
 
     stages {
